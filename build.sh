@@ -67,9 +67,11 @@ precheck() {
   [[ -f "${INSTALL_SH}" ]] || die "缺少 install.sh"
   [[ -f "${IMAGE_JSON}" ]] || die "缺少 images/image.json"
   [[ -d "${ROOT_DIR}/manifests" ]] || die "缺少 manifests/"
+  [[ -d "${ROOT_DIR}/scripts/install" ]] || die "缺少 scripts/install/"
   python3 -m json.tool "${IMAGE_JSON}" >/dev/null || die "images/image.json 不是合法 JSON"
   grep -qx '__PAYLOAD_BELOW__' "${INSTALL_SH}" || die "install.sh 必须包含独立行 __PAYLOAD_BELOW__"
   bash -n "${INSTALL_SH}" || die "install.sh 语法检查失败"
+  bash -n "${ROOT_DIR}/scripts/install/dtm-installer.sh" || die "scripts/install/dtm-installer.sh 语法检查失败"
 }
 
 json_to_index() {
@@ -99,8 +101,9 @@ PY
 
 copy_payload_files() {
   local payload_dir="$1"
-  mkdir -p "${payload_dir}/manifests" "${payload_dir}/images"
+  mkdir -p "${payload_dir}/manifests" "${payload_dir}/images" "${payload_dir}/scripts/install"
   cp -a "${ROOT_DIR}/manifests/." "${payload_dir}/manifests/"
+  cp -a "${ROOT_DIR}/scripts/install/." "${payload_dir}/scripts/install/"
   cp "${IMAGE_JSON}" "${payload_dir}/images/image.json"
   cp "${ROOT_DIR}/VERSION" "${payload_dir}/VERSION"
 }
