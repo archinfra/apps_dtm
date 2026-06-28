@@ -14,5 +14,37 @@
     "pull": "yedf/dtm:latest",
     "tag": "sealos.hub:5000/kube4/dtm:latest",
     "tar": "dtm-latest-arm64.tar"
+  },
+  {
+    "name": "mysql-client",
+    "arch": "amd64",
+    "platform": "linux/amd64",
+    "pull": "mysql:8.4",
+    "tag": "sealos.hub:5000/kube4/mysql:8.4",
+    "tar": "mysql-client-8.4-amd64.tar"
+  },
+  {
+    "name": "mysql-client",
+    "arch": "arm64",
+    "platform": "linux/arm64",
+    "pull": "mysql:8.4",
+    "tag": "sealos.hub:5000/kube4/mysql:8.4",
+    "tar": "mysql-client-8.4-arm64.tar"
+  },
+  {
+    "name": "postgres-client",
+    "arch": "amd64",
+    "platform": "linux/amd64",
+    "pull": "postgres:16-alpine",
+    "tag": "sealos.hub:5000/kube4/postgres:16-alpine",
+    "tar": "postgres-client-16-alpine-amd64.tar"
+  },
+  {
+    "name": "postgres-client",
+    "arch": "arm64",
+    "platform": "linux/arm64",
+    "pull": "postgres:16-alpine",
+    "tag": "sealos.hub:5000/kube4/postgres:16-alpine",
+    "tar": "postgres-client-16-alpine-arm64.tar"
   }
 ]
