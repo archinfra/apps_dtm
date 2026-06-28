@@ -55,7 +55,7 @@ jobs:
         run: |
           bash -n build.sh install.sh
           python3 -m json.tool images/image.json >/dev/null
-          ./install.sh -h >/tmp/install-help.txt
+          bash install.sh -h >/tmp/install-help.txt
           grep -q "DTM Kubernetes 离线安装器" /tmp/install-help.txt
 
       - name: Build offline package
