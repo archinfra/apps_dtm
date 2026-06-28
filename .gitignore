@@ -1,0 +1,13 @@
+# build outputs
+dist/
+.build-payload/
+payload.tar.gz
+*.run
+*.sha256
+
+# local/editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.tmp
