@@ -1,0 +1,18 @@
+[
+  {
+    "name": "dtm",
+    "arch": "amd64",
+    "platform": "linux/amd64",
+    "pull": "yedf/dtm:v1.19.0",
+    "tag": "sealos.hub:5000/kube4/dtm:v1.19.0",
+    "tar": "dtm-v1.19.0-amd64.tar"
+  },
+  {
+    "name": "dtm",
+    "arch": "arm64",
+    "platform": "linux/arm64",
+    "pull": "yedf/dtm:v1.19.0",
+    "tag": "sealos.hub:5000/kube4/dtm:v1.19.0",
+    "tar": "dtm-v1.19.0-arm64.tar"
+  }
+]
