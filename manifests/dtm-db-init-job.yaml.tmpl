@@ -1,0 +1,60 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: __APP_NAME__-db-init
+  namespace: __NAMESPACE__
+  labels:
+    app.kubernetes.io/name: dtm
+    app.kubernetes.io/instance: __APP_NAME__
+    app.kubernetes.io/component: db-init
+spec:
+  backoffLimit: __DB_INIT_BACKOFF_LIMIT__
+  ttlSecondsAfterFinished: __DB_INIT_TTL_SECONDS__
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dtm
+        app.kubernetes.io/instance: __APP_NAME__
+        app.kubernetes.io/component: db-init
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: db-init
+          image: __DB_INIT_IMAGE__
+          imagePullPolicy: __IMAGE_PULL_POLICY__
+          envFrom:
+            - configMapRef:
+                name: __APP_NAME__-config
+          env:
+            - name: STORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: __APP_NAME__-store
+                  key: STORE_PASSWORD
+            - name: DB_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: __APP_NAME__-store
+                  key: DB_ADMIN_PASSWORD
+            - name: INIT_SQL_B64
+              value: "__INIT_SQL_B64__"
+          command:
+            - /bin/sh
+            - -ec
+          args:
+            - |
+              echo "[db-init] driver=${STORE_DRIVER} host=${STORE_HOST} db=${STORE_DB} schema=${STORE_SCHEMA}"
+              printf '%s' "${INIT_SQL_B64}" | base64 -d > /tmp/dtm-init.sql
+              if [ "${STORE_DRIVER}" = "mysql" ]; then
+                export MYSQL_PWD="${DB_ADMIN_PASSWORD}"
+                mysql -h "${STORE_HOST}" -P "${STORE_PORT:-3306}" -u "${DB_ADMIN_USER}" < /tmp/dtm-init.sql
+              elif [ "${STORE_DRIVER}" = "postgres" ]; then
+                export PGPASSWORD="${DB_ADMIN_PASSWORD}"
+                if ! psql -h "${STORE_HOST}" -p "${STORE_PORT:-5432}" -U "${DB_ADMIN_USER}" -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='${STORE_DB}'" | grep -q 1; then
+                  psql -h "${STORE_HOST}" -p "${STORE_PORT:-5432}" -U "${DB_ADMIN_USER}" -d postgres -c "CREATE DATABASE \"${STORE_DB}\""
+                fi
+                psql -h "${STORE_HOST}" -p "${STORE_PORT:-5432}" -U "${DB_ADMIN_USER}" -d "${STORE_DB}" -f /tmp/dtm-init.sql
+              else
+                echo "[db-init] skip unsupported driver ${STORE_DRIVER}"
+              fi
+              echo "[db-init] done"
