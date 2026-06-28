@@ -85,7 +85,7 @@ chmod +x dtm-k8s-0.1.0-amd64.run
   -y
 ```
 
-YAML 里的镜像地址仍会渲染为 `sealos.hub:5000/kube4/dtm:<tag>`。
+YAML 里的镜像地址仍会渲染为 `sealos.hub:5000/kube4/dtm:latest`。
 
 ## 使用外部 Postgres
 
@@ -159,13 +159,13 @@ DTM 镜像入口在 `images/image.json`：
   "name": "dtm",
   "arch": "amd64",
   "platform": "linux/amd64",
-  "pull": "yedf/dtm:v1.19.0",
-  "tag": "sealos.hub:5000/kube4/dtm:v1.19.0",
-  "tar": "dtm-v1.19.0-amd64.tar"
+  "pull": "yedf/dtm:latest",
+  "tag": "sealos.hub:5000/kube4/dtm:latest",
+  "tar": "dtm-latest-amd64.tar"
 }
 ```
 
-升级 DTM 时同步修改：
+如果后续要固定到某个版本，先确认 Docker registry 中该 tag 存在，再同步修改：
 
 1. `images/image.json` 中 `pull/tag/tar`。
 2. 必要时更新 `VERSION`。
