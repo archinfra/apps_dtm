@@ -48,13 +48,25 @@ spec:
               sed -i "s|__STORE_DB__|${STORE_DB}|g; s|__STORE_SCHEMA__|${STORE_SCHEMA}|g" /tmp/dtm-init.sql
               if [ "${STORE_DRIVER}" = "mysql" ]; then
                 export MYSQL_PWD="${DB_ADMIN_PASSWORD}"
-                mysql -h "${STORE_HOST}" -P "${STORE_PORT:-3306}" -u "${DB_ADMIN_USER}" < /tmp/dtm-init.sql
+                MYSQL="mysql --protocol=tcp -h ${STORE_HOST} -P ${STORE_PORT:-3306} -u ${DB_ADMIN_USER}"
+                ${MYSQL} -e "CREATE DATABASE IF NOT EXISTS \`${STORE_DB}\` DEFAULT CHARACTER SET utf8mb4;"
+                ${MYSQL} "${STORE_DB}" < /tmp/dtm-init.sql
+                ${MYSQL} -Nse "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME='${STORE_DB}'" | grep -qx "${STORE_DB}"
+                ${MYSQL} "${STORE_DB}" -Nse "SHOW TABLES LIKE 'trans_global'" | grep -qx "trans_global"
+                ${MYSQL} "${STORE_DB}" -Nse "SHOW TABLES LIKE 'trans_branch_op'" | grep -qx "trans_branch_op"
+                ${MYSQL} "${STORE_DB}" -Nse "SHOW TABLES LIKE 'kv'" | grep -qx "kv"
+                echo "[db-init] mysql database and tables verified"
               elif [ "${STORE_DRIVER}" = "postgres" ]; then
                 export PGPASSWORD="${DB_ADMIN_PASSWORD}"
                 if ! psql -h "${STORE_HOST}" -p "${STORE_PORT:-5432}" -U "${DB_ADMIN_USER}" -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='${STORE_DB}'" | grep -q 1; then
                   psql -h "${STORE_HOST}" -p "${STORE_PORT:-5432}" -U "${DB_ADMIN_USER}" -d postgres -c "CREATE DATABASE \"${STORE_DB}\""
                 fi
                 psql -h "${STORE_HOST}" -p "${STORE_PORT:-5432}" -U "${DB_ADMIN_USER}" -d "${STORE_DB}" -f /tmp/dtm-init.sql
+                psql -h "${STORE_HOST}" -p "${STORE_PORT:-5432}" -U "${DB_ADMIN_USER}" -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='${STORE_DB}'" | grep -q 1
+                psql -h "${STORE_HOST}" -p "${STORE_PORT:-5432}" -U "${DB_ADMIN_USER}" -d "${STORE_DB}" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='${STORE_SCHEMA}' AND table_name='trans_global'" | grep -q 1
+                psql -h "${STORE_HOST}" -p "${STORE_PORT:-5432}" -U "${DB_ADMIN_USER}" -d "${STORE_DB}" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='${STORE_SCHEMA}' AND table_name='trans_branch_op'" | grep -q 1
+                psql -h "${STORE_HOST}" -p "${STORE_PORT:-5432}" -U "${DB_ADMIN_USER}" -d "${STORE_DB}" -tAc "SELECT 1 FROM information_schema.tables WHERE table_schema='${STORE_SCHEMA}' AND table_name='kv'" | grep -q 1
+                echo "[db-init] postgres database and tables verified"
               else
                 echo "[db-init] skip unsupported driver ${STORE_DRIVER}"
               fi
