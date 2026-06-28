@@ -45,6 +45,7 @@ spec:
             - |
               echo "[db-init] driver=${STORE_DRIVER} host=${STORE_HOST} db=${STORE_DB} schema=${STORE_SCHEMA}"
               printf '%s' "${INIT_SQL_B64}" | base64 -d > /tmp/dtm-init.sql
+              sed -i "s|__STORE_DB__|${STORE_DB}|g; s|__STORE_SCHEMA__|${STORE_SCHEMA}|g" /tmp/dtm-init.sql
               if [ "${STORE_DRIVER}" = "mysql" ]; then
                 export MYSQL_PWD="${DB_ADMIN_PASSWORD}"
                 mysql -h "${STORE_HOST}" -P "${STORE_PORT:-3306}" -u "${DB_ADMIN_USER}" < /tmp/dtm-init.sql
